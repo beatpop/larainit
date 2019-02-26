@@ -1,0 +1,45 @@
+version: "2"
+services:
+  nginx:
+    restart: always
+    container_name: larainit_nginx
+    image: beatpop/nginxlaravel
+    ports:
+     - "10890:80"
+    volumes_from:
+     - php
+    links:
+     - "php:php"
+
+  php:
+    restart: always
+    container_name: larainit_php
+    image: beatpop/php-fpm:7.2.10-odebug
+    volumes:
+     - "./:/var/www/html"
+     - "./storage/data:/var/www/html/storage/data"
+    links:
+     - "db:db"
+     - "redis:redis"
+
+  db:
+    restart: always
+    container_name: larainit_db
+    image: beatpop/mysql:latest
+    privileged: true
+    ports:
+     - "10891:3306"
+    volumes:
+     - "./addition/data/mysql:/var/lib/mysql"
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: 1
+    command:
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_general_ci
+      --explicit_defaults_for_timestamp=true
+      --innodb_use_native_aio=0
+
+  redis:
+    restart: always
+    container_name: larainit_redis
+    image: redis:latest
